@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 const allowedOrigins = [
-  "https://www.naseemahmad.com", // your React site domain
+  "https://www.naseemahmad.com",
+  "http://localhost:3000",
 ];
 
 export async function OPTIONS(req) {
@@ -22,7 +23,6 @@ export async function OPTIONS(req) {
 export async function POST(req) {
   const origin = req.headers.get("origin");
   const headers = new Headers();
-
   if (allowedOrigins.includes(origin)) {
     headers.set("Access-Control-Allow-Origin", origin);
   }
@@ -30,7 +30,7 @@ export async function POST(req) {
   try {
     const { message } = await req.json();
 
-    const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -42,12 +42,19 @@ export async function POST(req) {
       }),
     });
 
-    const data = await openaiRes.json();
-    return new NextResponse(JSON.stringify({ reply: data.choices?.[0]?.message?.content || "No response" }), {
-      headers,
-      status: 200,
-    });
+    const data = await res.json();
+
+    // 🧠 Add this line to see what you’re getting from OpenAI
+    console.log("OpenAI API response:", data);
+
+    if (!res.ok) {
+      return new NextResponse(JSON.stringify({ error: data.error }), { headers, status: res.status });
+    }
+
+    const reply = data?.choices?.[0]?.message?.content || "No response from model";
+    return new NextResponse(JSON.stringify({ reply }), { headers, status: 200 });
   } catch (err) {
+    console.error("Chat API error:", err);
     return new NextResponse(JSON.stringify({ error: err.message }), { headers, status: 500 });
   }
 }
