@@ -5,7 +5,6 @@ const allowedOrigins = [
   "http://localhost:3000",
 ];
 
-// Handle preflight (CORS)
 export async function OPTIONS(req) {
   const origin = req.headers.get("origin");
   const response = new NextResponse(null, { status: 204 });
@@ -21,7 +20,6 @@ export async function OPTIONS(req) {
   return response;
 }
 
-// Handle GET request → increments visitor counter
 export async function GET(req) {
   const origin = req.headers.get("origin");
   const headers = new Headers();
@@ -30,29 +28,42 @@ export async function GET(req) {
     headers.set("Access-Control-Allow-Origin", origin);
   }
 
-  const WORKSPACE = "Naseem Ahmad's Workspace"; // 🔹 Change this to your workspace name
-  const COUNTER = "first-counter-1472";         // 🔹 Change this to your counter name
-  const API_KEY = process.env.COUNTERAPI_KEY; // ✅ store in .env.local
+  const WORKSPACE = "naseem-ahmads-team-1472";   // ✅ Corrected
+  const COUNTER = "first-counter-1472";          // ✅ Corrected
+  const API_KEY = process.env.COUNTERAPI_KEY;    // (if you created one)
 
   try {
-    const response = await fetch(`https://api.counterapi.dev/v2/${WORKSPACE}/${COUNTER}/up`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${API_KEY}`,
-        "Accept": "application/json",
-      },
-    });
+    const res = await fetch(
+      `https://api.counterapi.dev/v2/${WORKSPACE}/${COUNTER}/up`,
+      {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+          ...(API_KEY && { Authorization: `Bearer ${API_KEY}` }), // optional
+        },
+      }
+    );
 
-    const data = await response.json();
+    const data = await res.json();
 
-    if (!response.ok) {
-      return new NextResponse(JSON.stringify({ error: data.error }), { headers, status: response.status });
+    if (!res.ok) {
+      console.error("CounterAPI error:", data);
+      return new NextResponse(JSON.stringify({ error: data.message }), {
+        headers,
+        status: res.status,
+      });
     }
 
-    // Return updated count
-    return new NextResponse(JSON.stringify({ count: data.value }), { headers, status: 200 });
+    const count = data?.data?.up_count ?? 0;
+    return new NextResponse(JSON.stringify({ count }), {
+      headers,
+      status: 200,
+    });
   } catch (err) {
     console.error("Visitor counter error:", err);
-    return new NextResponse(JSON.stringify({ error: err.message }), { headers, status: 500 });
+    return new NextResponse(JSON.stringify({ error: err.message }), {
+      headers,
+      status: 500,
+    });
   }
 }
