@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 const allowedOrigins = [
   "www.businesscard.naseemahmad.com",
+  "www.businesscard.naseemahmad.com/",
   "www.naseemahmad.com",
   "http://localhost:5173",
 ];
