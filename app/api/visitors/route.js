@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
 const allowedOrigins = [
-  "https://www.naseemahmad.com",
-  "http://localhost:3000",
+  "www.businesscard.naseemahmad.com",
+  "www.naseemahmad.com",
+  "http://localhost:5173",
 ];
 
 export async function OPTIONS(req) {
